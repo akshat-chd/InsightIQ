@@ -33,8 +33,17 @@ def _engine_kwargs(url: str) -> dict[str, Any]:
     }
 
 
+def _get_async_url(url: str) -> str:
+    if url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql+asyncpg://", 1)
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    return url
+
+async_db_url = _get_async_url(settings.database_url)
+
 engine: AsyncEngine = create_async_engine(
-    settings.database_url, **_engine_kwargs(settings.database_url)
+    async_db_url, **_engine_kwargs(async_db_url)
 )
 
 SessionFactory: async_sessionmaker[AsyncSession] = async_sessionmaker(
