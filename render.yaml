@@ -1,0 +1,43 @@
+databases:
+  - name: insightiq-db
+    databaseName: insightiq
+    user: insightiq
+    plan: free
+
+services:
+  - type: web
+    name: insightiq-backend
+    env: docker
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: insightiq-db
+          property: connectionString
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: "*" # Allow the frontend to connect
+      - key: AI_PROVIDER
+        value: auto
+      - key: OPENAI_API_KEY
+        sync: false # You will paste this in the Render Dashboard securely
+      - key: OPENAI_BASE_URL
+        value: "https://api.aicredits.in/v1"
+      - key: OPENAI_MODEL
+        value: "gpt-4o-mini"
+
+  - type: web
+    name: insightiq-frontend
+    env: docker
+    dockerContext: ./frontend
+    dockerfilePath: ./frontend/Dockerfile
+    plan: free
+    envVars:
+      - key: NEXT_PUBLIC_API_BASE_URL
+        value: "https://insightiq-backend.onrender.com" # Matches backend service name
